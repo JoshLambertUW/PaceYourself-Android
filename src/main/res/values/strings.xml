@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">PaceYourself</string>
+    <string name="action_settings">Settings</string>
+    <string name="run">Start a new run</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="too_far_snackbar">You are too far from the starting point. Please move closer to the starting point or start a new race.</string>
+    <string name="map_preview">Preview of run map</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">Settings</string>
+    <string name="pref_title_run_num">Run History Length</string>
+    <string name="pref_run_num">Set number of runs to save</string>
+
+    <string name="pref_distance_units">Set Units</string>
+    <string-array name="pref_units_list_titles">
+        <item>Miles</item>
+        <item>Kilometers</item>
+    </string-array>
+    <string-array name="pref_units_list_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+</resources>

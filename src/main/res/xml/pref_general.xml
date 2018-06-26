@@ -1,0 +1,28 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- NOTE: EditTextPreference accepts EditText attributes. -->
+    <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
+
+    <ListPreference
+        android:defaultValue="0"
+        android:entries="@array/pref_units_list_titles"
+        android:entryValues="@array/pref_units_list_values"
+        android:key="unit_list"
+        android:negativeButtonText="Cancel"
+        android:positiveButtonText="Set"
+        android:title="@string/pref_distance_units" />
+
+    <EditTextPreference
+        android:defaultValue="25"
+        android:inputType="number"
+        android:key="runNumber"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_run_num" />
+
+    <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
+         dismiss it. -->
+    <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
+
+</PreferenceScreen>

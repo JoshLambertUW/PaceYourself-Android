@@ -1,0 +1,85 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/startFab"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_margin="5dp"
+        android:src="@android:drawable/ic_media_play"
+        app:backgroundTint="?attr/colorPrimary" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/pauseFab"
+        android:visibility="visible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_margin="5dp"
+        android:src="@android:drawable/ic_media_pause"
+        app:backgroundTint="?attr/colorPrimary" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/stopFab"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_toRightOf="@+id/startFab"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_media_stop"
+        app:backgroundTint="?attr/colorPrimary"
+        app:fabSize="mini" />
+
+    <TextView
+        android:id="@+id/textTime"
+        android:visibility="visible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/stopFab"
+        android:text=""
+        android:padding="10dp"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/textDistance"
+        android:visibility="visible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_below="@+id/textTime"
+        android:layout_alignLeft="@+id/textTime"
+        android:text=""
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/prevTextDistance"
+        android:visibility="visible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/textTime"
+        android:layout_toRightOf="@+id/textTime"
+        android:padding="10dp"
+        android:text=""
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/resultsTextDistance"
+        android:visibility="visible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/prevTextDistance"
+        android:layout_alignLeft="@+id/prevTextDistance"
+        android:text=""
+        android:padding="10dp"
+        android:textSize="18sp" />
+
+</RelativeLayout>
