@@ -68,7 +68,7 @@ public class RunListAdapter extends ArrayAdapter<Run> {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        Run run = (Run) getItem(position);
+        Run run = getItem(position);
         holder.runDateTxt.setText(run.getDateString());
         holder.runTimeTxt.setText(run.getTotalTimeText());
         holder.runLengthTxt.setText(run.getTotalDistanceText(context));

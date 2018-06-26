@@ -54,9 +54,9 @@ public class RunMenu extends android.support.v4.app.Fragment {
             @Override
             public void onClick(View v) {
                 startRun(1);
-                startFab.setVisibility(v.INVISIBLE);
-                pauseFab.setVisibility(v.VISIBLE);
-                stopFab.setVisibility(v.INVISIBLE);
+                startFab.setVisibility(View.INVISIBLE);
+                pauseFab.setVisibility(View.VISIBLE);
+                stopFab.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -64,9 +64,9 @@ public class RunMenu extends android.support.v4.app.Fragment {
             @Override
             public void onClick(View v) {
                 startRun(2);
-                startFab.setVisibility(v.VISIBLE);
-                pauseFab.setVisibility(v.INVISIBLE);
-                stopFab.setVisibility(v.VISIBLE);
+                startFab.setVisibility(View.VISIBLE);
+                pauseFab.setVisibility(View.INVISIBLE);
+                stopFab.setVisibility(View.VISIBLE);
             }
         });
 
@@ -74,12 +74,12 @@ public class RunMenu extends android.support.v4.app.Fragment {
             @Override
             public void onClick(View v) {
                 startRun(3);
-                startFab.setVisibility(v.INVISIBLE);
-                pauseFab.setVisibility(v.INVISIBLE);
-                stopFab.setVisibility(v.INVISIBLE);
-                timerTextView.setVisibility(v.INVISIBLE);
-                distanceTextView.setVisibility(v.INVISIBLE);
-                resultsTextView.setVisibility(v.VISIBLE);
+                startFab.setVisibility(View.INVISIBLE);
+                pauseFab.setVisibility(View.INVISIBLE);
+                stopFab.setVisibility(View.INVISIBLE);
+                timerTextView.setVisibility(View.INVISIBLE);
+                distanceTextView.setVisibility(View.INVISIBLE);
+                resultsTextView.setVisibility(View.VISIBLE);
             }
         });
 
