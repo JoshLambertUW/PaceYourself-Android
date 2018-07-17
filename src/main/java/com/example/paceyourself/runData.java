@@ -1,11 +1,10 @@
 package com.example.paceyourself;
 
+import com.google.gson.Gson;
+
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,5 +85,16 @@ public class runData extends AppCompatActivity {
         }
 
         return (ArrayList<Run>) runHistory;
+    }
+
+    public Run stringToRun(String runString){
+        gson = new Gson();
+        Run run = gson.fromJson(runString, Run.class);
+        return run;
+    }
+
+    public Run getRun(Context context, int position){
+        List<Run> runHistory = getRunHistory(context);
+        return runHistory.get(position);
     }
 }
