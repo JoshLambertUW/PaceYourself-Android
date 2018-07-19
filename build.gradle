@@ -25,7 +25,7 @@ android {
     useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "com.example.paceyourself"
-        minSdkVersion 19
+        minSdkVersion 23
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -66,4 +66,14 @@ dependencies {
     compile 'com.google.code.gson:gson:2.8.2'
     compile 'org.apache.httpcomponents:httpcore:4.4.1'
     compile 'org.apache.httpcomponents:httpclient:4.5'
+
+    implementation 'com.amazonaws:aws-android-sdk-core:2.6.+'
+    implementation 'com.amazonaws:aws-android-sdk-auth-core:2.6.+@aar'
+    implementation 'com.amazonaws:aws-android-sdk-auth-ui:2.6.+@aar'
+    implementation 'com.amazonaws:aws-android-sdk-auth-userpools:2.6.+@aar'
+    implementation 'com.amazonaws:aws-android-sdk-cognitoidentityprovider:2.6.+'
+    implementation 'com.amazonaws:aws-android-sdk-pinpoint:2.6.+'
+
+    implementation 'com.amazonaws:aws-android-sdk-ddb:2.6.+'
+    implementation 'com.amazonaws:aws-android-sdk-ddb-mapper:2.6.+'
 }

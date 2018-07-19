@@ -1,28 +1,17 @@
 package com.example.paceyourself;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-
-import com.example.paceyourself.R;
-import com.example.paceyourself.RunListAdapter;
-import com.example.paceyourself.Run;
-import com.example.paceyourself.runData;
+import android.widget.ListView;
 
 import java.util.List;
 
@@ -75,7 +64,8 @@ public class RunListFragment extends Fragment implements
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent(getActivity(), MapsActivity.class);
-        intent.putExtra("position", position);
+        String runString = rundata.getRunString(activity, position);
+        intent.putExtra("run", runString);
         startActivity(intent);
     }
 

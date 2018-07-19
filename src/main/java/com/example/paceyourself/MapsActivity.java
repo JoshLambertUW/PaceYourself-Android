@@ -1,26 +1,5 @@
 package com.example.paceyourself;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.location.Location;
-import android.os.Build;
-import android.os.Handler;
-import android.preference.PreferenceManager;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -36,9 +15,24 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.gson.Gson;
 
-import java.util.ArrayList;
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.location.Location;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
+
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +68,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     float distanceTraveledPrev = 0;
     long millis = 0;
     long currentRunCompTime = 0;
-    int position = -1;
+    int prevRunStatus = -1;
     int prevRunIndex = 0;
 
     public static final String PREFS_NAME = "SAVED_PREFS";
@@ -86,16 +80,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
 
         Intent myIntent = getIntent();
-
-        position = myIntent.getIntExtra("position", -1);
         rundata = new runData();
 
-        if (position > -1){
-            List<Run> runHistory = rundata.getRunHistory(context);
-            previousRun = runHistory.get(position);
+        String pastRunString = myIntent.getStringExtra("run");
+        if (pastRunString != null){
+            prevRunStatus = 0;
+            previousRun = rundata.stringToRun(pastRunString);
             prevRunTime = previousRun.getTotalTime();
         }
-
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
@@ -148,7 +140,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         transaction.replace(R.id.fragment_container, StartFragment);
         transaction.commit();
 
-        if (position > -1){
+        if (prevRunStatus > -1){
             previousRunList = previousRun.getCoordList();
             mPrevLastLocation = previousRunList.get(0);
             Polyline previousRunLine = mMap.addPolyline(new PolylineOptions()
@@ -295,9 +287,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void comparePrev(){
 
-        if ((position > -1)) {
+        if ((prevRunStatus > -1)) {
             prevRunIndex++;
-            if (prevRunIndex >= previousRunList.size()) position = -2;
+            if (prevRunIndex >= previousRunList.size()) prevRunStatus = -2;
             else {
                 float[] results = new float[1];
                 LatLng temp = previousRunList.get(prevRunIndex);
@@ -315,7 +307,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
 
-        if (position == -2) {
+        if (prevRunStatus == -2) {
             if (distanceTraveled < previousRun.getTotalDistance()) {
                 long millisBehind = millis - currentRunCompTime;
                 String timeBehind = "";
@@ -333,7 +325,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 long millisAhead = currentRunCompTime - millis;
 
                 currentRunMenu.setPrevDistanceTextView("You finished " + convertTime(millisAhead) + " ahead");
-                position = -3;
+                prevRunStatus = -3;
             }
         }
     }
@@ -382,7 +374,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     results);
             if (results[0] > (float).1){
                 Snackbar.make(findViewById(R.id.mapsActivity), R.string.too_far_snackbar, Snackbar.LENGTH_LONG).show();
-                position = -1;
+                prevRunStatus = -1;
             }
 
             distanceTraveled = 0;
@@ -442,8 +434,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentRun.setTotalDistance(distanceTraveled);
         currentRunMenu.setResultsTextView("Results: " + currentRun.getTotalDistanceText(context) + " \nTime: " + currentRun.getTotalTimeText());
 
-        if (position > -1){
-            position = -1;
+        if (prevRunStatus > -1){
+            prevRunStatus = -1;
             if (distanceTraveled < distanceTraveledPrev){
                 currentRunMenu.setPrevDistanceTextView("You were " + convertUnits(distanceTraveledPrev - distanceTraveled) + " behind");
             }

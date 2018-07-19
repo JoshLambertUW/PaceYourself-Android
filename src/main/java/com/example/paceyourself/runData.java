@@ -53,6 +53,7 @@ public class runData extends AppCompatActivity {
     }
 
     public void addRun(Context context, Run run){
+        //Add online here?
         List<Run> runHistory = getRunHistory(context);
         if (runHistory == null) runHistory = new ArrayList<Run>();
         runHistory.add(0, run);
@@ -93,8 +94,10 @@ public class runData extends AppCompatActivity {
         return run;
     }
 
-    public Run getRun(Context context, int position){
+    public String getRunString(Context context, int position){
+        gson = new Gson();
         List<Run> runHistory = getRunHistory(context);
-        return runHistory.get(position);
+        Run temp = runHistory.get(position);
+        return gson.toJson(temp);
     }
 }

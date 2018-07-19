@@ -3,7 +3,9 @@
     <string name="action_settings">Settings</string>
     <string name="run">Start a new run</string>
     <string name="title_activity_maps">Map</string>
-    <string name="too_far_snackbar">You are too far from the starting point. Please move closer to the starting point or start a new race.</string>
+    <string name="too_far_snackbar">You are too far from the starting point. Please move closer to
+        the starting point or start a new race.
+    </string>
     <string name="map_preview">Preview of run map</string>
     <string name="title_activity_settings">Settings</string>
 
