@@ -7,48 +7,48 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Admin on 5/30/2018.
  */
-public class runData extends AppCompatActivity {
 
-    private String runHistory;
-    private SharedPreferences settings;
-    private SharedPreferences.Editor editor;
+public class runDataRemote extends AppCompatActivity {
+
     Gson gson;
 
-    public static final String PREFS_NAME = "SAVED_PREFS";
-    public static final String RUNS = "RUN_HISTORY";
-
-    private DocumentReference userDocRef;
-
-    public runData(){
-        String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        CollectionReference usersCollectionRef = db.collection("users");
-        DocumentReference userDocRef = usersCollectionRef.document(UID);
+    public runDataRemote(){
+        super();
     }
 
-    public int getMaxRunHistorySize(Context context){
+    private DocumentReference getUserDoc(){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference users = db.collection("users");
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        return users.document(uid);
+    }
+/*
+    public void maxRunHistorySize(Context context){
+
         int maxNum = 25;
+
         SharedPreferences settings = context.getSharedPreferences("prefs",
                 Context.MODE_PRIVATE);
-        return Integer.parseInt(settings.getString("runNumber", "25"));
-    }
+        maxNum = Integer.parseInt(settings.getString("runNumber", "25"));
 
-    // Unnecessary with Firebase
+        List<Run> runHistory = getRunHistory(context);
+        while (runHistory.size() >= maxNum) {
+            runHistory.remove(runHistory.size() - 1);
+        }
+        saveRunHistory(context, runHistory);
+    }
+*/
 /*
     public void saveRunHistory(Context context, List<Run> runHistory){
-
         settings = context.getSharedPreferences(PREFS_NAME,
                 Context.MODE_PRIVATE);
 
@@ -58,30 +58,24 @@ public class runData extends AppCompatActivity {
         editor.putString(RUNS, jsonHistory);
         editor.commit();
 
+        getUserDoc().collection
+
     }
 */
     public void addRun(Context context, Run run){
-
-        /*
-        private Timestamp runTimestamp;
-    private long totalTime;
-    private float totalDistance;
-    private String mapPreview = "";
-    private Map coordList;
-         */
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("timestamp", run.getDate());
-        data.put("totalTime", run.getTotalTime());
-        data.put("totalDistance", run.getTotalDistance());
-        data.put("mapPreview", run.getMapPreview());
-        data.put("coordList", run.getCoordList());
-
-        userDocRef.collection("runHistory").add(data);
+        List<Run> runHistory = getRunHistory(context);
+        if (runHistory == null) runHistory = new ArrayList<Run>();
+        runHistory.add(0, run);
+        maxRunHistorySize(context);
+        saveRunHistory(context, runHistory);
     }
 
-    public void deleteRun(Context context, String docID){
-        userDocRef.collection("runHistory").document(docID).delete();
+    public void deleteRun(Context context, Run run){
+        List<Run> runHistory = getRunHistory(context);
+        if (runHistory != null) {
+            runHistory.remove(run);
+        }
+        saveRunHistory(context,runHistory);
     }
 
     public ArrayList<Run> getRunHistory(Context context){

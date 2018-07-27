@@ -1,26 +1,5 @@
 package com.example.paceyourself;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.location.Location;
-import android.os.Build;
-import android.os.Handler;
-import android.preference.PreferenceManager;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -36,11 +15,30 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.gson.Gson;
+import com.google.firebase.Timestamp;
 
-import java.util.ArrayList;
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.location.Location;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
+
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -64,6 +62,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     RunMenu currentRunMenu;
     Run currentRun;
     Run previousRun;
+    Map previousRunMap;
     List<LatLng> previousRunList;
 
     runData rundata;
@@ -149,7 +148,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         transaction.commit();
 
         if (position > -1){
-            previousRunList = previousRun.getCoordList();
+            previousRunMap = previousRun.getCoordList();
+
+            Iterator it = previousRunMap.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                Map data = (Map) pair.getValue();
+                Map mCoordinate = (HashMap) data.get("location");
+                double latitude = (double) (mCoordinate.get("latitude"));
+                double longitude = (double) (mCoordinate.get("longitude"));
+                LatLng mLatlng = new LatLng(latitude, longitude);
+                previousRunList.add(mLatlng);
+                it.remove();
+            }
+
             mPrevLastLocation = previousRunList.get(0);
             Polyline previousRunLine = mMap.addPolyline(new PolylineOptions()
                     .width(5)
@@ -404,7 +416,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             initTime = System.currentTimeMillis();
             Calendar calendar = Calendar.getInstance();
 
-            currentRun = new Run(calendar.getTime());
+            currentRun = new Run(Timestamp.now());
             currentRun.addCoord(latLng);
 
             timerHandler.postDelayed(timerRunnable, 0);
