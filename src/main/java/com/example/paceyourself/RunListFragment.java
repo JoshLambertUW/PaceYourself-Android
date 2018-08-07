@@ -71,7 +71,8 @@ public class RunListFragment extends Fragment implements
 
     @Override
     public boolean onItemLongClick(AdapterView<?> arg0, View view, int position, long arg3) {
-        rundata.deleteRun(activity, runHistory.get(position));
+            //ToDo: Implement deleteRun
+        //rundata.deleteRun(activity, runHistory.get(position));
         runlistAdapter.remove(runHistory.get(position));
         return true;
     }

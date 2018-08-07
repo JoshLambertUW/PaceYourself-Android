@@ -1,23 +1,19 @@
 package com.example.paceyourself;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.TextView;
+import android.view.View;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private FloatingActionButton fab;
@@ -26,6 +22,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -42,9 +40,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         } else {
-            runListFragment = new RunListFragment();
-            setFragmentTitle(R.string.app_name);
-            switchContent(runListFragment, RunListFragment.ARG_ITEM_ID);
+
+            if (user == null) {
+                Intent intent = new Intent(MainActivity.this, AuthUiActivity.class);
+                startActivity(intent);
+            }
+            else {
+                runListFragment = new RunListFragment();
+                setFragmentTitle(R.string.app_name);
+                switchContent(runListFragment, RunListFragment.ARG_ITEM_ID);
+            }
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);

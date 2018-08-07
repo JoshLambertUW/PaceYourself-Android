@@ -1,45 +1,39 @@
 package com.example.paceyourself;
 
+import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.Timestamp;
+
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 import android.util.Base64;
-import android.util.Log;
-import android.widget.ImageView;
-
-import com.google.android.gms.maps.model.LatLng;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * Created by Admin on 6/4/2018.
  */
 public class Run {
 
-    private Date runDate;
+    private Timestamp runTimestamp;
     private long totalTime;
     private float totalDistance;
     private String mapPreview = "";
-    private List<LatLng> coordList;
-    private TaskCallback mCallback;
+    private HashMap coordList;
 
     private String STATIC_MAP_API_ENDPOINT = "http://maps.googleapis.com/maps/api/staticmap?size=230x200&path=";
     private String STATE_MAP_API_FINISH = "&sensor=false";
@@ -49,23 +43,26 @@ public class Run {
         super();
     }
 
-    public Run(Date runDate){
+    public Run(Timestamp runTimestamp){
         super();
-        this.runDate = runDate;
-        coordList = new ArrayList<LatLng>();
+        this.runTimestamp = runTimestamp;
+        HashMap<String, HashMap> coordList = new HashMap();
     }
 
-    public Date getDate(){
-        return runDate;
+    public Run(Timestamp runTimestamp, long totalTime, float totalDistance, String mapPreview, HashMap coordList){
+        this.runTimestamp = runTimestamp;
+        this.totalTime = totalTime;
+        this.totalDistance = totalDistance;
+        this.mapPreview = mapPreview;
+        this.coordList = coordList;
     }
 
-    public String getDateString(){
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss");
-        return sdf.format(runDate);
+    public Timestamp getDate(){
+        return runTimestamp;
     }
 
-    public void setDate(Date runDate){
-        this.runDate = runDate;
+    public void setTimestamp(Timestamp timestamp){
+        this.runTimestamp = timestamp;
     }
 
     public void setTotalTime(long totalTime){this.totalTime = totalTime; }
@@ -74,46 +71,55 @@ public class Run {
         return totalTime;
     }
 
-    public String getTotalTimeText(){
-        long totalTimeMillis = getTotalTime();
-        if (totalTimeMillis == 0) return "";
+    public String getDateString(){
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss");
+        return sdf.format(runTimestamp);
+    }
 
-        long hours = TimeUnit.MILLISECONDS.toHours(totalTimeMillis) % 24;
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(totalTimeMillis) % 60;
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(totalTimeMillis) % 60;
-        long milliseconds = totalTimeMillis % 1000;
+    public String getTotalTimeText(){
+
+        long hours = TimeUnit.MILLISECONDS.toHours(totalTime) % 24;
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(totalTime) % 60;
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(totalTime) % 60;
+        long milliseconds = totalTime % 1000;
 
         return String.format("%d:%02d:%02d:%02d",
                 hours, minutes, seconds, milliseconds);
     }
 
+    public String getTotalDistanceText(Context context) {
+        SharedPreferences settings = context.getSharedPreferences("prefs",
+                Context.MODE_PRIVATE);
+
+        int unit = Integer.parseInt(settings.getString("unit_list", "0"));
+
+        if (unit == 1) return Float.toString(totalDistance * (float)0.001) + " km";
+        else return Float.toString(totalDistance * (float)0.000621371) + " miles";
+    }
+
+    public Bitmap getMapPreviewBmp(){
+        if(!mapPreview.equalsIgnoreCase("") ){
+            byte[] decodedByte = Base64.decode(mapPreview, 0);
+            return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
+        }
+        return null;
+    }
 
     public void addCoord(LatLng latlng){
-        coordList.add(latlng);
-    }
+        Timestamp mLastUpdateTime = Timestamp.now();
+        coordList.put("timestamp", mLastUpdateTime);
+        HashMap<String, Double> mCoordinate = new HashMap<>();
 
-    public Date getRunDate() {
-        return runDate;
-    }
+        mCoordinate.put("latitude", latlng.latitude);
+        mCoordinate.put("longitude", latlng.longitude);
 
-    public void setRunDate(Date runDate) {
-        this.runDate = runDate;
+        coordList.put("location", mCoordinate);
     }
 
     public float getTotalDistance(){
         return totalDistance;
     }
 
-    public String getTotalDistanceText(Context context) {
-        float distance = totalDistance;
-        SharedPreferences settings = context.getSharedPreferences("prefs",
-                Context.MODE_PRIVATE);
-
-        int unit = Integer.parseInt(settings.getString("unit_list", "0"));
-
-        if (unit == 1) return Float.toString(distance * (float)0.001) + " km";
-        else return Float.toString(distance * (float)0.000621371) + " miles";
-    }
 
     public void setTotalDistance(float totalDistance) {
         this.totalDistance = totalDistance;
@@ -121,24 +127,40 @@ public class Run {
 
     public void setMapPreview(MapsActivity m){
         final MapsActivity activity = m;
-        String startMarker = "color:green|" + String.valueOf(coordList.get(0).latitude) + "," + String.valueOf(coordList.get(0).longitude);
-        String finishMarker = "color:red|" + String.valueOf(coordList.get(coordList.size() - 1).latitude) + "," + String.valueOf(coordList.get(coordList.size() - 1).longitude);
         String path = "color:blue|weight:3";
-        for (int i = 0; i < coordList.size(); i += 30){
-            path += "|" + String.valueOf(coordList.get(i).latitude) + "," + String.valueOf(coordList.get(i).longitude);
+
+        Iterator it = coordList.entrySet().iterator();
+
+        Map.Entry pair = (Map.Entry) it.next();
+        Map data = (Map) pair.getValue();
+        Map mCoordinate = (HashMap)data.get("location");
+        double latitude = (double) (mCoordinate.get("latitude"));
+        double longitude = (double) (mCoordinate.get("longitude"));
+        it.remove();
+
+        String startMarker = "color:green|" + String.valueOf(latitude) + "," + String.valueOf(longitude);
+
+        while (it.hasNext()){
+            pair = (Map.Entry) it.next();
+            data = (Map) pair.getValue();
+            mCoordinate = (HashMap)data.get("location");
+            latitude = (double) (mCoordinate.get("latitude"));
+            longitude = (double) (mCoordinate.get("longitude"));
+            path += "|" + String.valueOf(latitude) + "," + String.valueOf(longitude);
+            it.remove();
         }
-        String last = "|" + String.valueOf(coordList.get(coordList.size() - 1).latitude) + "," + String.valueOf(coordList.get(coordList.size() - 1).longitude);
+
+        String finishMarker = "color:red|" + String.valueOf(latitude) + "," + String.valueOf(longitude);
 
         try {
             startMarker = URLEncoder.encode(startMarker, "UTF-8");
             finishMarker =  URLEncoder.encode(finishMarker, "UTF-8");
             path = URLEncoder.encode(path, "UTF-8");
-            last = URLEncoder.encode(last, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
 
-        STATIC_MAP_API_ENDPOINT = STATIC_MAP_API_ENDPOINT + path + "&markers=" + startMarker + "&markers=" + finishMarker + last + STATE_MAP_API_FINISH;
+        STATIC_MAP_API_ENDPOINT = STATIC_MAP_API_ENDPOINT + path + "&markers=" + startMarker + "&markers=" + finishMarker + STATE_MAP_API_FINISH;
 
         AsyncTask<Void, Void, byte[]> setImageFromUrl = new AsyncTask<Void, Void, byte[]>(){
             @Override
@@ -173,19 +195,27 @@ public class Run {
             this.mapPreview = mapPreviewString;
     }
 
-    public Bitmap getMapPreview(){
-        if(!mapPreview.equalsIgnoreCase("") ){
-            byte[] decodedByte = Base64.decode(mapPreview, 0);
-            return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
-        }
-        return null;
+    public String getMapPreview(){
+        return mapPreview;
     }
 
-    public List<LatLng> getCoordList() {
+    public Map getCoordList() {
         return coordList;
     }
 
-    public void setCoordList(List<LatLng> coordList) {
+    public void setCoordList(HashMap coordList) {
         this.coordList = coordList;
+    }
+
+    public Timestamp getRunTimestamp() {
+        return runTimestamp;
+    }
+
+    public void setRunTimestamp(Timestamp runTimestamp) {
+        this.runTimestamp = runTimestamp;
+    }
+
+    public void setMapPreview(String mapPreview) {
+        this.mapPreview = mapPreview;
     }
 }

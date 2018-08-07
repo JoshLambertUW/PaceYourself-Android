@@ -15,6 +15,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.Timestamp;
 
 import android.Manifest;
 import android.content.Context;
@@ -34,7 +35,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -58,6 +62,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     RunMenu currentRunMenu;
     Run currentRun;
     Run previousRun;
+    Map previousRunMap;
     List<LatLng> previousRunList;
 
     runData rundata;
@@ -68,7 +73,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     float distanceTraveledPrev = 0;
     long millis = 0;
     long currentRunCompTime = 0;
-    int prevRunStatus = -1;
+    int position = -1;
     int prevRunIndex = 0;
 
     public static final String PREFS_NAME = "SAVED_PREFS";
@@ -80,14 +85,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
 
         Intent myIntent = getIntent();
+
+        position = myIntent.getIntExtra("position", -1);
         rundata = new runData();
 
-        String pastRunString = myIntent.getStringExtra("run");
-        if (pastRunString != null){
-            prevRunStatus = 0;
-            previousRun = rundata.stringToRun(pastRunString);
+        if (position > -1){
+            List<Run> runHistory = rundata.getRunHistory(context);
+            previousRun = runHistory.get(position);
             prevRunTime = previousRun.getTotalTime();
         }
+
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
@@ -140,8 +147,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         transaction.replace(R.id.fragment_container, StartFragment);
         transaction.commit();
 
-        if (prevRunStatus > -1){
-            previousRunList = previousRun.getCoordList();
+        if (position > -1){
+            previousRunMap = previousRun.getCoordList();
+
+            Iterator it = previousRunMap.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                Map data = (Map) pair.getValue();
+                Map mCoordinate = (HashMap) data.get("location");
+                double latitude = (double) (mCoordinate.get("latitude"));
+                double longitude = (double) (mCoordinate.get("longitude"));
+                LatLng mLatlng = new LatLng(latitude, longitude);
+                previousRunList.add(mLatlng);
+                it.remove();
+            }
+
             mPrevLastLocation = previousRunList.get(0);
             Polyline previousRunLine = mMap.addPolyline(new PolylineOptions()
                     .width(5)
@@ -287,9 +307,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void comparePrev(){
 
-        if ((prevRunStatus > -1)) {
+        if ((position > -1)) {
             prevRunIndex++;
-            if (prevRunIndex >= previousRunList.size()) prevRunStatus = -2;
+            if (prevRunIndex >= previousRunList.size()) position = -2;
             else {
                 float[] results = new float[1];
                 LatLng temp = previousRunList.get(prevRunIndex);
@@ -307,7 +327,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
 
-        if (prevRunStatus == -2) {
+        if (position == -2) {
             if (distanceTraveled < previousRun.getTotalDistance()) {
                 long millisBehind = millis - currentRunCompTime;
                 String timeBehind = "";
@@ -325,7 +345,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 long millisAhead = currentRunCompTime - millis;
 
                 currentRunMenu.setPrevDistanceTextView("You finished " + convertTime(millisAhead) + " ahead");
-                prevRunStatus = -3;
+                position = -3;
             }
         }
     }
@@ -374,7 +394,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     results);
             if (results[0] > (float).1){
                 Snackbar.make(findViewById(R.id.mapsActivity), R.string.too_far_snackbar, Snackbar.LENGTH_LONG).show();
-                prevRunStatus = -1;
+                position = -1;
             }
 
             distanceTraveled = 0;
@@ -396,7 +416,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             initTime = System.currentTimeMillis();
             Calendar calendar = Calendar.getInstance();
 
-            currentRun = new Run(calendar.getTime());
+            currentRun = new Run(Timestamp.now());
             currentRun.addCoord(latLng);
 
             timerHandler.postDelayed(timerRunnable, 0);
@@ -434,8 +454,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentRun.setTotalDistance(distanceTraveled);
         currentRunMenu.setResultsTextView("Results: " + currentRun.getTotalDistanceText(context) + " \nTime: " + currentRun.getTotalTimeText());
 
-        if (prevRunStatus > -1){
-            prevRunStatus = -1;
+        if (position > -1){
+            position = -1;
             if (distanceTraveled < distanceTraveledPrev){
                 currentRunMenu.setPrevDistanceTextView("You were " + convertUnits(distanceTraveledPrev - distanceTraveled) + " behind");
             }
