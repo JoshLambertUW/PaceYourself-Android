@@ -40,9 +40,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         } else {
-            runListFragment = new RunListFragment();
-            setFragmentTitle(R.string.app_name);
-            switchContent(runListFragment, RunListFragment.ARG_ITEM_ID);
+
+            if (user == null) {
+                Intent intent = new Intent(MainActivity.this, AuthUiActivity.class);
+                startActivity(intent);
+            }
+            else {
+                runListFragment = new RunListFragment();
+                setFragmentTitle(R.string.app_name);
+                switchContent(runListFragment, RunListFragment.ARG_ITEM_ID);
+            }
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);

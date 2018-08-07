@@ -33,8 +33,7 @@ public class Run {
     private long totalTime;
     private float totalDistance;
     private String mapPreview = "";
-    private Map coordList;
-    //private List<LatLng> coordList;
+    private HashMap coordList;
 
     private String STATIC_MAP_API_ENDPOINT = "http://maps.googleapis.com/maps/api/staticmap?size=230x200&path=";
     private String STATE_MAP_API_FINISH = "&sensor=false";
@@ -47,16 +46,19 @@ public class Run {
     public Run(Timestamp runTimestamp){
         super();
         this.runTimestamp = runTimestamp;
-        coordList = new HashMap();
+        HashMap<String, HashMap> coordList = new HashMap();
+    }
+
+    public Run(Timestamp runTimestamp, long totalTime, float totalDistance, String mapPreview, HashMap coordList){
+        this.runTimestamp = runTimestamp;
+        this.totalTime = totalTime;
+        this.totalDistance = totalDistance;
+        this.mapPreview = mapPreview;
+        this.coordList = coordList;
     }
 
     public Timestamp getDate(){
         return runTimestamp;
-    }
-
-    public String getDateString(){
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss");
-        return sdf.format(runTimestamp);
     }
 
     public void setTimestamp(Timestamp timestamp){
@@ -69,23 +71,44 @@ public class Run {
         return totalTime;
     }
 
-    public String getTotalTimeText(){
-        long totalTimeMillis = getTotalTime();
-        if (totalTimeMillis == 0) return "";
+    public String getDateString(){
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss");
+        return sdf.format(runTimestamp);
+    }
 
-        long hours = TimeUnit.MILLISECONDS.toHours(totalTimeMillis) % 24;
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(totalTimeMillis) % 60;
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(totalTimeMillis) % 60;
-        long milliseconds = totalTimeMillis % 1000;
+    public String getTotalTimeText(){
+
+        long hours = TimeUnit.MILLISECONDS.toHours(totalTime) % 24;
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(totalTime) % 60;
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(totalTime) % 60;
+        long milliseconds = totalTime % 1000;
 
         return String.format("%d:%02d:%02d:%02d",
                 hours, minutes, seconds, milliseconds);
     }
 
+    public String getTotalDistanceText(Context context) {
+        SharedPreferences settings = context.getSharedPreferences("prefs",
+                Context.MODE_PRIVATE);
+
+        int unit = Integer.parseInt(settings.getString("unit_list", "0"));
+
+        if (unit == 1) return Float.toString(totalDistance * (float)0.001) + " km";
+        else return Float.toString(totalDistance * (float)0.000621371) + " miles";
+    }
+
+    public Bitmap getMapPreviewBmp(){
+        if(!mapPreview.equalsIgnoreCase("") ){
+            byte[] decodedByte = Base64.decode(mapPreview, 0);
+            return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
+        }
+        return null;
+    }
+
     public void addCoord(LatLng latlng){
         Timestamp mLastUpdateTime = Timestamp.now();
         coordList.put("timestamp", mLastUpdateTime);
-        Map mCoordinate = new HashMap();
+        HashMap<String, Double> mCoordinate = new HashMap<>();
 
         mCoordinate.put("latitude", latlng.latitude);
         mCoordinate.put("longitude", latlng.longitude);
@@ -97,16 +120,6 @@ public class Run {
         return totalDistance;
     }
 
-    public String getTotalDistanceText(Context context) {
-        float distance = totalDistance;
-        SharedPreferences settings = context.getSharedPreferences("prefs",
-                Context.MODE_PRIVATE);
-
-        int unit = Integer.parseInt(settings.getString("unit_list", "0"));
-
-        if (unit == 1) return Float.toString(distance * (float)0.001) + " km";
-        else return Float.toString(distance * (float)0.000621371) + " miles";
-    }
 
     public void setTotalDistance(float totalDistance) {
         this.totalDistance = totalDistance;
@@ -182,19 +195,27 @@ public class Run {
             this.mapPreview = mapPreviewString;
     }
 
-    public Bitmap getMapPreview(){
-        if(!mapPreview.equalsIgnoreCase("") ){
-            byte[] decodedByte = Base64.decode(mapPreview, 0);
-            return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
-        }
-        return null;
+    public String getMapPreview(){
+        return mapPreview;
     }
 
     public Map getCoordList() {
         return coordList;
     }
 
-    public void setCoordList(Map coordList) {
+    public void setCoordList(HashMap coordList) {
         this.coordList = coordList;
+    }
+
+    public Timestamp getRunTimestamp() {
+        return runTimestamp;
+    }
+
+    public void setRunTimestamp(Timestamp runTimestamp) {
+        this.runTimestamp = runTimestamp;
+    }
+
+    public void setMapPreview(String mapPreview) {
+        this.mapPreview = mapPreview;
     }
 }

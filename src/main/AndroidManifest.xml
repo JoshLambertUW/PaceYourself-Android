@@ -62,7 +62,7 @@
                 android:name=".SettingsActivity"
                 android:label="@string/title_activity_settings"/>
         <activity
-                android:name=".LoginActivity"
+                android:name=".AuthUiActivity"
                 android:label="@string/title_activity_login">
         </activity>
     </application>

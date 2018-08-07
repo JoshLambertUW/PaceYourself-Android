@@ -72,18 +72,18 @@ public class RunListAdapter extends ArrayAdapter<Run> {
         holder.runDateTxt.setText(run.getDateString());
         holder.runTimeTxt.setText(run.getTotalTimeText());
         holder.runLengthTxt.setText(run.getTotalDistanceText(context));
-        holder.runMapPrev.setImageBitmap(run.getMapPreview());
+        holder.runMapPrev.setImageBitmap(run.getMapPreviewBmp());
 
         return convertView;
     }
 
+
     /*Checks whether a particular product exists in SharedPreferences*/
-    public boolean checkRun(Run checkRun) {
+    public boolean checkRun(Run run) {
         boolean check = false;
-        List<Run> runHistory = rundata.getRunHistory(context); //Context needed?
         if (runHistory != null) {
-            for (Run run : runHistory) {
-                if (run.equals(checkRun)) {
+            for (Run curr : runHistory) {
+                if (curr.equals(run)) {
                     check = true;
                     break;
                 }

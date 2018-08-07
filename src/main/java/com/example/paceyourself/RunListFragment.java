@@ -1,28 +1,17 @@
 package com.example.paceyourself;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-
-import com.example.paceyourself.R;
-import com.example.paceyourself.RunListAdapter;
-import com.example.paceyourself.Run;
-import com.example.paceyourself.runData;
+import android.widget.ListView;
 
 import java.util.List;
 
@@ -81,7 +70,8 @@ public class RunListFragment extends Fragment implements
 
     @Override
     public boolean onItemLongClick(AdapterView<?> arg0, View view, int position, long arg3) {
-        rundata.deleteRun(activity, runHistory.get(position));
+            //ToDo: Implement deleteRun
+        //rundata.deleteRun(activity, runHistory.get(position));
         runlistAdapter.remove(runHistory.get(position));
         return true;
     }

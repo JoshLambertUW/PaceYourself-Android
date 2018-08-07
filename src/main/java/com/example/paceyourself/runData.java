@@ -3,25 +3,26 @@ package com.example.paceyourself;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Admin on 5/30/2018.
  */
 public class runData extends AppCompatActivity {
 
-    private String runHistory;
+    List<Run> runHistory;
     private SharedPreferences settings;
     private SharedPreferences.Editor editor;
     Gson gson;
@@ -61,15 +62,7 @@ public class runData extends AppCompatActivity {
     }
 */
     public void addRun(Context context, Run run){
-
-        /*
-        private Timestamp runTimestamp;
-    private long totalTime;
-    private float totalDistance;
-    private String mapPreview = "";
-    private Map coordList;
-         */
-
+/*
         Map<String, Object> data = new HashMap<>();
         data.put("timestamp", run.getDate());
         data.put("totalTime", run.getTotalTime());
@@ -77,40 +70,31 @@ public class runData extends AppCompatActivity {
         data.put("mapPreview", run.getMapPreview());
         data.put("coordList", run.getCoordList());
 
-        userDocRef.collection("runHistory").add(data);
+*/
+        userDocRef.collection("runHistory").add(run);
     }
 
     public void deleteRun(Context context, String docID){
         userDocRef.collection("runHistory").document(docID).delete();
     }
 
-    public ArrayList<Run> getRunHistory(Context context){
-        settings = context.getSharedPreferences(PREFS_NAME,
-                Context.MODE_PRIVATE);
-        List<Run> runHistory;
+    public List<Run> getRunHistory(Context context){
+        int maxRuns =  getMaxRunHistorySize(context);
 
-        if (settings.contains(RUNS)){
-            String jsonHistory = settings.getString(RUNS, null);
-            gson = new Gson();
-            Run[] runList = gson.fromJson(jsonHistory, Run[].class);
+        Query runHistoryQuery = userDocRef.collection
+                ("runHistory").orderBy("timestamp").limit(maxRuns);
 
-            runHistory = Arrays.asList(runList);
-            runHistory = new ArrayList<Run>(runHistory);
-        } else {
-            return null;
-        }
+        runHistoryQuery.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e)
+            {
+                for (DocumentSnapshot doc : queryDocumentSnapshots)
+                {
+                    runHistory.add(doc.toObject(Run.class));
+                }
+            }
+        });
 
-        return (ArrayList<Run>) runHistory;
-    }
-
-    public Run stringToRun(String runString){
-        gson = new Gson();
-        Run run = gson.fromJson(runString, Run.class);
-        return run;
-    }
-
-    public Run getRun(Context context, int position){
-        List<Run> runHistory = getRunHistory(context);
-        return runHistory.get(position);
+        return runHistory;
     }
 }
