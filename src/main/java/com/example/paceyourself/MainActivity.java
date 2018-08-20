@@ -1,7 +1,6 @@
 package com.example.paceyourself;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.amazonaws.mobile.client.AWSMobileClient;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,7 +21,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -40,16 +38,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         } else {
-
-            if (user == null) {
-                Intent intent = new Intent(MainActivity.this, AuthUiActivity.class);
-                startActivity(intent);
-            }
-            else {
-                runListFragment = new RunListFragment();
-                setFragmentTitle(R.string.app_name);
-                switchContent(runListFragment, RunListFragment.ARG_ITEM_ID);
-            }
+            AWSMobileClient.getInstance().initialize(this).execute();
+            AWSProvider.initialize(getApplicationContext());
+            runListFragment = new RunListFragment();
+            setFragmentTitle(R.string.app_name);
+            switchContent(runListFragment, RunListFragment.ARG_ITEM_ID);
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);

@@ -1,7 +1,6 @@
 package com.example.paceyourself;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.google.firebase.Timestamp;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -29,11 +28,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class Run {
 
-    private Timestamp runTimestamp;
+    private long runTimestamp;
     private long totalTime;
     private float totalDistance;
     private String mapPreview = "";
-    private HashMap coordList;
+    private Map coordList;
 
     private String STATIC_MAP_API_ENDPOINT = "http://maps.googleapis.com/maps/api/staticmap?size=230x200&path=";
     private String STATE_MAP_API_FINISH = "&sensor=false";
@@ -43,13 +42,13 @@ public class Run {
         super();
     }
 
-    public Run(Timestamp runTimestamp){
+    public Run(long runTimestamp){
         super();
         this.runTimestamp = runTimestamp;
-        HashMap<String, HashMap> coordList = new HashMap();
+        Map<String, Map> coordList;
     }
 
-    public Run(Timestamp runTimestamp, long totalTime, float totalDistance, String mapPreview, HashMap coordList){
+    public Run(long runTimestamp, long totalTime, float totalDistance, String mapPreview, Map coordList){
         this.runTimestamp = runTimestamp;
         this.totalTime = totalTime;
         this.totalDistance = totalDistance;
@@ -57,12 +56,8 @@ public class Run {
         this.coordList = coordList;
     }
 
-    public Timestamp getDate(){
+    public long getDate(){
         return runTimestamp;
-    }
-
-    public void setTimestamp(Timestamp timestamp){
-        this.runTimestamp = timestamp;
     }
 
     public void setTotalTime(long totalTime){this.totalTime = totalTime; }
@@ -106,7 +101,7 @@ public class Run {
     }
 
     public void addCoord(LatLng latlng){
-        Timestamp mLastUpdateTime = Timestamp.now();
+        long mLastUpdateTime = System.currentTimeMillis();
         coordList.put("timestamp", mLastUpdateTime);
         HashMap<String, Double> mCoordinate = new HashMap<>();
 
@@ -119,7 +114,6 @@ public class Run {
     public float getTotalDistance(){
         return totalDistance;
     }
-
 
     public void setTotalDistance(float totalDistance) {
         this.totalDistance = totalDistance;
@@ -203,15 +197,15 @@ public class Run {
         return coordList;
     }
 
-    public void setCoordList(HashMap coordList) {
+    public void setCoordList(Map coordList) {
         this.coordList = coordList;
     }
 
-    public Timestamp getRunTimestamp() {
+    public long getRunTimestamp() {
         return runTimestamp;
     }
 
-    public void setRunTimestamp(Timestamp runTimestamp) {
+    public void setRunTimestamp(long runTimestamp) {
         this.runTimestamp = runTimestamp;
     }
 

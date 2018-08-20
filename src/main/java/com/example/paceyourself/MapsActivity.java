@@ -15,7 +15,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.firebase.Timestamp;
 
 import android.Manifest;
 import android.content.Context;
@@ -416,7 +415,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             initTime = System.currentTimeMillis();
             Calendar calendar = Calendar.getInstance();
 
-            currentRun = new Run(Timestamp.now());
+            currentRun = new Run(initTime);
             currentRun.addCoord(latLng);
 
             timerHandler.postDelayed(timerRunnable, 0);

@@ -52,6 +52,8 @@ public class AWSProvider {
         return IdentityManager.getDefaultIdentityManager();
     }
 
+
+
     public PinpointManager getPinpointManager() {
         if (pinpointManager == null) {
             final AWSCredentialsProvider cp = getIdentityManager().getCredentialsProvider();

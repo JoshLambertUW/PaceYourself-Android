@@ -1,100 +1,134 @@
 package com.example.paceyourself;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
+
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.mobile.auth.core.IdentityManager;
+import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobile.config.AWSConfiguration;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+// Add DynamoDBMapper and AmazonDynamoDBClient to support data access methods
 
 /**
  * Created by Admin on 5/30/2018.
  */
 public class runData extends AppCompatActivity {
 
-    List<Run> runHistory;
-    private SharedPreferences settings;
-    private SharedPreferences.Editor editor;
     Gson gson;
+
+    DynamoDBMapper dynamoDBMapper;
+    AmazonDynamoDBClient dynamoDBClient;
+    final IdentityManager identityManager;
+
+    double lastRun;
 
     public static final String PREFS_NAME = "SAVED_PREFS";
     public static final String RUNS = "RUN_HISTORY";
 
-    private DocumentReference userDocRef;
-
     public runData(){
-        String UID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        CollectionReference usersCollectionRef = db.collection("users");
-        DocumentReference userDocRef = usersCollectionRef.document(UID);
+        super();
+        identityManager = AWSProvider.getInstance().getIdentityManager();
+
+        AWSCredentialsProvider credentialsProvider = AWSMobileClient.getInstance().getCredentialsProvider();
+        AWSConfiguration configuration = AWSMobileClient.getInstance().getConfiguration();
+
+        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(credentialsProvider);
+
+        this.dynamoDBMapper = DynamoDBMapper.builder()
+                .dynamoDBClient(dynamoDBClient)
+                .awsConfiguration(configuration)
+                .build();
+
     }
 
-    public int getMaxRunHistorySize(Context context){
+    public void getMaxRunHistorySize(Context context) {
         int maxNum = 25;
         SharedPreferences settings = context.getSharedPreferences("prefs",
                 Context.MODE_PRIVATE);
-        return Integer.parseInt(settings.getString("runNumber", "25"));
+        maxNum = Integer.parseInt(settings.getString("runNumber", "25"));
+
+        List<Run> runHistory = getRunHistory(context);
+        while (runHistory.size() >= maxNum) {
+            runHistory.remove(runHistory.size() - 1);
+        }
+        saveRunHistory(context, runHistory);
     }
 
-    // Unnecessary with Firebase
-/*
     public void saveRunHistory(Context context, List<Run> runHistory){
 
-        settings = context.getSharedPreferences(PREFS_NAME,
-                Context.MODE_PRIVATE);
-
-        editor = settings.edit();
         gson = new Gson();
         String jsonHistory = gson.toJson(runHistory);
-        editor.putString(RUNS, jsonHistory);
-        editor.commit();
 
-    }
-*/
-    public void addRun(Context context, Run run){
-/*
-        Map<String, Object> data = new HashMap<>();
-        data.put("timestamp", run.getDate());
-        data.put("totalTime", run.getTotalTime());
-        data.put("totalDistance", run.getTotalDistance());
-        data.put("mapPreview", run.getMapPreview());
-        data.put("coordList", run.getCoordList());
+        final RunHistoryDO runHistoryDO = new RunHistoryDO();
 
-*/
-        userDocRef.collection("runHistory").add(run);
-    }
+        runHistoryDO.setUserId(identityManager.getCachedUserID());
 
-    public void deleteRun(Context context, String docID){
-        userDocRef.collection("runHistory").document(docID).delete();
-    }
+        runHistoryDO.setLastRun(lastRun);
+        runHistoryDO.setRunsString(jsonHistory);
 
-    public List<Run> getRunHistory(Context context){
-        int maxRuns =  getMaxRunHistorySize(context);
-
-        Query runHistoryQuery = userDocRef.collection
-                ("runHistory").orderBy("timestamp").limit(maxRuns);
-
-        runHistoryQuery.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        new Thread(new Runnable() {
             @Override
-            public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e)
-            {
-                for (DocumentSnapshot doc : queryDocumentSnapshots)
-                {
-                    runHistory.add(doc.toObject(Run.class));
-                }
+            public void run() {
+                dynamoDBMapper.save(runHistoryDO);
+                // Item saved
             }
-        });
-
-        return runHistory;
+        }).start();
     }
+
+    public void addRun(Context context, Run run){
+
+        List<Run> runHistory = getRunHistory(context);
+        if (runHistory == null) runHistory = new ArrayList<Run>();
+        lastRun = run.getRunTimestamp();
+        runHistory.add(0, run);
+        getMaxRunHistorySize(context);
+        saveRunHistory(context, runHistory);
+
+    }
+
+    public void deleteRun(Context context, Run run){
+        List<Run> runHistory = getRunHistory(context);
+        if (runHistory != null) {
+            runHistory.remove(run);
+        }
+        saveRunHistory(context,runHistory);
+    }
+
+    public ArrayList<Run> getRunHistory(Context context){
+
+        RunHistoryDO runHistoryDO = dynamoDBMapper.load(
+                RunHistoryDO.class,
+                identityManager.getCachedUserID(),
+                "runsString");
+
+        String history = runHistoryDO.getRunsString();
+        gson = new Gson();
+        Run[] runList = gson.fromJson(history, Run[].class);
+        List<Run> runHistory = Arrays.asList(runList);
+        runHistory = new ArrayList<Run>(runHistory);
+
+        return (ArrayList<Run>) runHistory;
+    }
+
+    public Run stringToRun(String runString){
+        gson = new Gson();
+        Run run = gson.fromJson(runString, Run.class);
+        return run;
+    }
+
+    public Run getRun(Context context, int position){
+        List<Run> runHistory = getRunHistory(context);
+        return runHistory.get(position);
+    }
+
 }

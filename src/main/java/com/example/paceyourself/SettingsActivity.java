@@ -159,7 +159,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     }
 
     public void loginUser(View view) {
-        Intent intent = new Intent(SettingsActivity.this, AuthUiActivity.class);
+        Intent intent = new Intent(SettingsActivity.this, AuthenticatorActivity.class);
         startActivity(intent);
     }
 }

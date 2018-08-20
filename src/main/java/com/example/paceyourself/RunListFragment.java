@@ -64,8 +64,7 @@ public class RunListFragment extends Fragment implements
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent(getActivity(), MapsActivity.class);
-        String runString = rundata.getRunString(activity, position);
-        intent.putExtra("run", runString);
+        intent.putExtra("position", position);
         startActivity(intent);
     }
 
